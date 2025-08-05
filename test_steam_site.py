@@ -10,19 +10,25 @@ from selenium.webdriver.chrome.service import Service
 service = Service(executable_path=ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service)
 
+
 def test_enter_site():
     driver.get("https://store.steampowered.com/")
     assert "https://store.steampowered.com/" in driver.current_url
+
 
 def test_click_site():
     driver.find_elements("class name", "global_action_link")[0].click()
     driver.implicitly_wait(3)
     assert "login" in driver.current_url
 
+
 def test_enter_password():
-    driver.find_elements("class name", "_2GBWeup5cttgbTw8FM3tfx")[0].send_keys(''.join(random.choices(string.ascii_letters + string.digits, k=8)))
-    driver.find_elements("class name", "_2GBWeup5cttgbTw8FM3tfx")[1].send_keys(''.join(random.choices(string.ascii_letters + string.digits, k=8)))
+    driver.find_elements("class name", "_2GBWeup5cttgbTw8FM3tfx")[0].send_keys(
+        ''.join(random.choices(string.ascii_letters + string.digits, k=8)))
+    driver.find_elements("class name", "_2GBWeup5cttgbTw8FM3tfx")[1].send_keys(
+        ''.join(random.choices(string.ascii_letters + string.digits, k=8)))
     time.sleep(3)
     driver.find_element("class name", "DjSvCZoKKfoNSmarsEcTS").click()
     time.sleep(3)
-    assert "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова." in driver.find_element("class name", "_1W_6HXiG4JJ0By1qN_0fGZ").text
+    assert "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова." in driver.find_element("class name",
+                                                                                                         "_1W_6HXiG4JJ0By1qN_0fGZ").text
