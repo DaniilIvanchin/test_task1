@@ -22,17 +22,23 @@ def driver():
 def test_login_with_random_credentials(driver):
     driver.get("https://store.steampowered.com/")
 
-    authorization_button= WebDriverWait(driver, 10).until(EC.element_to_be_clickable(("xpath",'//*[@id="global_action_menu"]/a[2]')))
+    authorization_button= WebDriverWait(driver, 10).until(EC.element_to_be_clickable(("xpath",'//a[text()="войти"]')))
     authorization_button.click()
-    driver.implicitly_wait(3)
     assert "login" in driver.current_url
 
-    driver.find_elements("class name", "_2GBWeup5cttgbTw8FM3tfx")[0].send_keys(
-        ''.join(random.choices(string.ascii_letters + string.digits, k=8)))
-    driver.find_elements("class name", "_2GBWeup5cttgbTw8FM3tfx")[1].send_keys(
-        ''.join(random.choices(string.ascii_letters + string.digits, k=8)))
-    time.sleep(3)
-    driver.find_element("class name", "DjSvCZoKKfoNSmarsEcTS").click()
-    time.sleep(3)
-    assert "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова." in driver.find_element("class name",
-                                                                                                         "_1W_6HXiG4JJ0By1qN_0fGZ").text
+    login_field = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable(("xpath", '(//input[@type="text"])[1]'))
+    )
+    password_field = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable(("xpath", '//input[@type="password"]'))
+    )
+
+    login_field.send_keys(
+        ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    )
+    password_field.send_keys(
+        ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    )
+    driver.find_element("xpath", '//button[@type="submit"]').click()
+    assert "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова." in driver.find_element("xpath",
+                                                                                                         '//div[text()="Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."]').text
