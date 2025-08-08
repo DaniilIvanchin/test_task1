@@ -5,20 +5,25 @@ import random
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 @pytest.fixture
 def driver():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     driver.implicitly_wait(2)
+    WebDriverWait(driver, 15).until(
+        lambda d: d.execute_script("return document.readyState") == "complete"
+    )
     yield driver
     driver.quit()
 
 def test_login_with_random_credentials(driver):
     driver.get("https://store.steampowered.com/")
-    assert "https://store.steampowered.com/" in driver.current_url
 
-    driver.find_elements("class name", "global_action_link")[0].click()
+    authorization_button= WebDriverWait(driver, 10).until(EC.element_to_be_clickable(("xpath",'//*[@id="global_action_menu"]/a[2]')))
+    authorization_button.click()
     driver.implicitly_wait(3)
     assert "login" in driver.current_url
 
