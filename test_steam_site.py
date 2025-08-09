@@ -13,14 +13,14 @@ def driver():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     driver.implicitly_wait(2)
-    WebDriverWait(driver, 15).until(
-        lambda d: d.execute_script("return document.readyState") == "complete"
-    )
     yield driver
     driver.quit()
 
 def test_login_with_random_credentials(driver):
     driver.get("https://store.steampowered.com/")
+    WebDriverWait(driver, 15).until(
+        lambda d: d.execute_script("return document.readyState") == "complete"
+    )
 
     authorization_button= WebDriverWait(driver, 10).until(EC.element_to_be_clickable(("xpath",'//a[text()="войти"]')))
     authorization_button.click()
@@ -40,5 +40,9 @@ def test_login_with_random_credentials(driver):
         ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     )
     driver.find_element("xpath", '//button[@type="submit"]').click()
-    assert "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова." in driver.find_element("xpath",
-                                                                                                         '//div[text()="Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."]').text
+    error_message = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((
+            "xpath", '//div[text()="Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."]'
+        ))
+    )
+    assert "Пожалуйста, проверьте свой пароль" in error_message.text
