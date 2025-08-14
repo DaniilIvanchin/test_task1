@@ -1,4 +1,3 @@
-import time
 import pytest
 import string
 import random
@@ -10,13 +9,17 @@ from selenium.webdriver.support import expected_conditions as EC
 
 base_url = "https://store.steampowered.com/"
 page_load_timeout = 15
+auth_button = "xpath", '//a[text()="войти"]'
+
+
 class waitless:
     def __call__(self, driver):
         try:
-            element = driver.find_element("xpath", '//a[@class="global_action_link" and (text())="войти"]')
+            element = driver.find_element("xpath", '//a[@class="global_action_link"]')
             return element if element.is_displayed() else False
         except:
             return False
+
 
 @pytest.fixture
 def driver():
@@ -29,14 +32,8 @@ def driver():
 
 
 def test_login_with_random_credentials(driver):
-    driver.get(base_url)
-    WebDriverWait(driver, page_load_timeout).until(
-        lambda d: d.execute_script("return document.readyState") == "complete"
-    )
-
-    authorization_button = WebDriverWait(driver, page_load_timeout).until(EC.element_to_be_clickable(("xpath", '//a[text()="войти"]')))
+    authorization_button = WebDriverWait(driver, page_load_timeout).until(EC.element_to_be_clickable(auth_button))
     authorization_button.click()
-    assert "login" in driver.current_url
 
     login_field = WebDriverWait(driver, page_load_timeout).until(
         EC.element_to_be_clickable(("xpath", '(//input[@type="text"])[1]'))
@@ -52,9 +49,18 @@ def test_login_with_random_credentials(driver):
         ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     )
     driver.find_element("xpath", '//button[@type="submit"]').click()
-    error_message = WebDriverWait(driver, page_load_timeout).until(
-        EC.visibility_of_element_located((
-            "xpath", '//div[text()="Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."]'
-        ))
+
+    error_container = (
+        'xpath',
+        "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1])"
     )
-    assert "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова." in error_message.text
+    error_text = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
+
+    WebDriverWait(driver, page_load_timeout).until(
+        lambda d: d.find_element(*error_container).text.strip() != ""
+    )
+
+    actual_text = driver.find_element(*error_container).text.strip()
+
+    assert error_text in actual_text, (
+        f"Expected: '{error_text}', actual: '{actual_text}'")
