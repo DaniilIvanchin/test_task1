@@ -58,8 +58,13 @@ def test_login_with_random_credentials(driver):
     ERROR_TEXT = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
 
     ELEMENT = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
-        lambda d: d.find_element(*ERROR_CONTAINER) if d.find_element(*ERROR_CONTAINER).text.strip() != "" else False
+        EC.presence_of_element_located(ERROR_CONTAINER)
     )
+
+    WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
+        lambda d: ELEMENT.text.strip() != ""
+    )
+
     ACTUAL_TEXT = ELEMENT.text.strip()
 
     assert ERROR_TEXT in ACTUAL_TEXT, (
