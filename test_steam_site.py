@@ -6,16 +6,18 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
-base_url = "https://store.steampowered.com/"
-page_load_timeout = 15
-auth_button = "xpath", '//a[text()="войти"]'
+BASE_URL = "https://store.steampowered.com/"
+PAGE_LOAD_TIMEOUT = 15
+AUTH_BUTTON = By.XPATH, '//a[text()="войти"]'
+GLOBAL_ACTION_LINK = (By.XPATH, '//a[contains(@class, "global_action_link")]')
 
 
-class waitless:
+class WaitLess:
     def __call__(self, driver):
         try:
-            element = driver.find_element("xpath", '//a[@class="global_action_link"]')
+            element = driver.find_element(*GLOBAL_ACTION_LINK)
             return element if element.is_displayed() else False
         except:
             return False
@@ -25,21 +27,23 @@ class waitless:
 def driver():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
-    driver.get(base_url)
-    WebDriverWait(driver, page_load_timeout).until(waitless())
+    driver.get(BASE_URL)
+    WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(WaitLess())
     yield driver
     driver.quit()
 
 
 def test_login_with_random_credentials(driver):
-    authorization_button = WebDriverWait(driver, page_load_timeout).until(EC.element_to_be_clickable(auth_button))
+    authorization_button = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(EC.element_to_be_clickable(AUTH_BUTTON))
     authorization_button.click()
 
-    login_field = WebDriverWait(driver, page_load_timeout).until(
-        EC.element_to_be_clickable(("xpath", '(//input[@type="text"])[1]'))
+    WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(WaitLess())
+
+    login_field = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
+        EC.element_to_be_clickable((By.XPATH, '(//input[@type="text"])[1]'))
     )
-    password_field = WebDriverWait(driver, page_load_timeout).until(
-        EC.element_to_be_clickable(("xpath", '//input[@type="password"]'))
+    password_field = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
+        EC.element_to_be_clickable((By.XPATH, '//input[@type="password"]'))
     )
 
     login_field.send_keys(
@@ -48,19 +52,15 @@ def test_login_with_random_credentials(driver):
     password_field.send_keys(
         ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     )
-    driver.find_element("xpath", '//button[@type="submit"]').click()
+    driver.find_element(By.XPATH, '//button[@type="submit"]').click()
 
-    error_container = (
-        'xpath',
-        "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1])"
+    ERROR_CONTAINER = (By.XPATH, "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1])")
+    ERROR_TEXT = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
+
+    ELEMENT = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
+        lambda d: d.find_element(*ERROR_CONTAINER) if d.find_element(*ERROR_CONTAINER).text.strip() != "" else False
     )
-    error_text = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
+    ACTUAL_TEXT = ELEMENT.text.strip()
 
-    WebDriverWait(driver, page_load_timeout).until(
-        lambda d: d.find_element(*error_container).text.strip() != ""
-    )
-
-    actual_text = driver.find_element(*error_container).text.strip()
-
-    assert error_text in actual_text, (
-        f"Expected: '{error_text}', actual: '{actual_text}'")
+    assert ERROR_TEXT in ACTUAL_TEXT, (
+        f"Expected: '{ERROR_TEXT}', actual: '{ACTUAL_TEXT}'")
