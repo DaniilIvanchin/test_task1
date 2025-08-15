@@ -54,7 +54,8 @@ def test_login_with_random_credentials(driver):
     )
     driver.find_element(By.XPATH, '//button[@type="submit"]').click()
 
-    ERROR_CONTAINER = (By.XPATH, "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1])")
+    ERROR_CONTAINER = (By.XPATH,
+                       "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1][string-length(normalize-space(text())) > 1])")
     ERROR_TEXT = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
 
     ELEMENT = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(
