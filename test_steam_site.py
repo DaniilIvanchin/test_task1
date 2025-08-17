@@ -10,27 +10,27 @@ from selenium.webdriver.common.by import By
 
 BASE_URL = "https://store.steampowered.com/"
 PAGE_LOAD_TIMEOUT = 15
-AUTH_BUTTON = By.XPATH, '//a[text()="войти"]'
+AUTH_BUTTON = (By.XPATH, '//a[text()="войти"]')
 GLOBAL_ACTION_LINK = (By.XPATH, '//a[contains(@class, "global_action_link")]')
-HOME_FEATURED_TITLE = By.XPATH, "//*[@id='home_featured_and_recommended']"
+HOME_FEATURED_TITLE = (By.XPATH, "//*[@id='home_featured_and_recommended']")
 LOGIN_BUTTON = (By.XPATH, "//body[contains(@class, 'login v6 global responsive_page')]")
-wait = None
+
 
 @pytest.fixture
 def driver():
-    global wait
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     driver.get(BASE_URL)
     wait = WebDriverWait(driver, PAGE_LOAD_TIMEOUT)
     wait.until(EC.visibility_of_element_located(GLOBAL_ACTION_LINK))
     wait.until(EC.visibility_of_element_located(HOME_FEATURED_TITLE))
-    yield driver
+    yield driver, wait
     driver.quit()
 
 
 def test_login_with_random_credentials(driver):
-    authorization_button = WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(EC.element_to_be_clickable(AUTH_BUTTON))
+    driver, wait = driver
+    authorization_button = wait.until(EC.element_to_be_clickable(AUTH_BUTTON))
     authorization_button.click()
 
     wait.until(EC.visibility_of_element_located(LOGIN_BUTTON))
