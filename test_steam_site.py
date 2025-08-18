@@ -12,8 +12,12 @@ BASE_URL = "https://store.steampowered.com/"
 PAGE_LOAD_TIMEOUT = 15
 AUTH_BUTTON = (By.XPATH, '//a[text()="войти"]')
 GLOBAL_ACTION_LINK = (By.XPATH, '//a[contains(@class, "global_action_link")]')
-HOME_FEATURED_TITLE = (By.XPATH, "//*[@id='home_featured_and_recommended']")
-LOGIN_BUTTON = (By.XPATH, "//body[contains(@class, 'login v6 global responsive_page')]")
+LOGIN_BUTTON = (By.XPATH, "//body[contains(@class, 'login')]")
+ERROR_CONTAINER = (By.XPATH,
+                   "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1][string-length(normalize-space(text())) > 1])")
+ERROR_TEXT = ("Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова.")
+LOGIN_FIELD = (By.XPATH, '//input[@type="text"]')
+PASSWORD_FIELD = (By.XPATH, '//input[@type="password"]')
 
 
 @pytest.fixture
@@ -21,44 +25,35 @@ def driver():
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     driver.get(BASE_URL)
-    wait = WebDriverWait(driver, PAGE_LOAD_TIMEOUT)
-    wait.until(EC.visibility_of_element_located(GLOBAL_ACTION_LINK))
-    wait.until(EC.visibility_of_element_located(HOME_FEATURED_TITLE))
-    yield driver, wait
+    WebDriverWait(driver, PAGE_LOAD_TIMEOUT).until(EC.visibility_of_element_located(GLOBAL_ACTION_LINK))
+    yield driver
     driver.quit()
 
 
 def test_login_with_random_credentials(driver):
-    driver, wait = driver
+    wait = WebDriverWait(driver, PAGE_LOAD_TIMEOUT)
     authorization_button = wait.until(EC.element_to_be_clickable(AUTH_BUTTON))
     authorization_button.click()
 
     wait.until(EC.visibility_of_element_located(LOGIN_BUTTON))
 
-    login_field = wait.until(
-        EC.element_to_be_clickable((By.XPATH, '(//input[@type="text"])[1]'))
-    )
-    password_field = wait.until(
-        EC.element_to_be_clickable((By.XPATH, '//input[@type="password"]'))
-    )
-
-    login_field.send_keys(
+    wait.until(EC.visibility_of_element_located(LOGIN_FIELD)).send_keys(
         ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     )
-    password_field.send_keys(
+
+    wait.until(EC.visibility_of_element_located(PASSWORD_FIELD)).send_keys(
         ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     )
-    driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-
-    error_container = (By.XPATH,
-                       "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1][string-length(normalize-space(text())) > 1])")
-    error_text = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
+    submit_button = wait.until(
+        EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]'))
+    )
+    submit_button.click()
 
     element = wait.until(
-        EC.visibility_of_element_located(error_container)
+        EC.visibility_of_element_located(ERROR_CONTAINER)
     )
 
     actual_text = element.text.strip()
 
-    assert error_text in actual_text, (
-        f"Expected: '{error_text}', actual: '{actual_text}'")
+    assert ERROR_TEXT in actual_text, (
+        f"Expected: '{ERROR_TEXT}', actual: '{actual_text}'")
