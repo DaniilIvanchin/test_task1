@@ -15,7 +15,7 @@ GLOBAL_ACTION_LINK = (By.XPATH, '//a[contains(@class, "global_action_link")]')
 LOGIN_BUTTON = (By.XPATH, "//body[contains(@class, 'login')]")
 ERROR_CONTAINER = (By.XPATH,
                    "(//a[contains(@href,'HelpWithLogin')]/preceding-sibling::div[1][string-length(normalize-space(text())) > 1])")
-ERROR_TEXT = ("Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова.")
+ERROR_TEXT = "Пожалуйста, проверьте свой пароль и имя аккаунта и попробуйте снова."
 LOGIN_FIELD = (By.XPATH, '//input[@type="text"]')
 PASSWORD_FIELD = (By.XPATH, '//input[@type="password"]')
 
@@ -50,7 +50,7 @@ def test_login_with_random_credentials(driver):
     submit_button.click()
 
     element = wait.until(
-        EC.visibility_of_element_located(ERROR_CONTAINER)
+        EC.presence_of_element_located(ERROR_CONTAINER)
     )
 
     actual_text = element.text.strip()
