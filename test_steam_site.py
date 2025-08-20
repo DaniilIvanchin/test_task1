@@ -30,7 +30,7 @@ def driver():
     driver.quit()
 
 
-def test_login_with_random_credentials(driver):
+def new_test (driver):
     wait = WebDriverWait(driver, PAGE_LOAD_TIMEOUT)
     authorization_button = wait.until(EC.element_to_be_clickable(AUTH_BUTTON))
     authorization_button.click()
