@@ -1,7 +1,4 @@
 import pytest
-from selenium_task2.pages.base_page import BasePage
-from selenium_task2.pages.search_page import SearchPage
-from selenium_task2.pages.home_page import HomePage
 from selenium_task2.core.browser import Browser
 from selenium_task2.core.config_reader import ConfigReader
 
@@ -12,17 +9,8 @@ def driver(request):
     yield driver
     Browser.quit()
 
-
 @pytest.fixture
-def base_page(driver):
-    return BasePage(driver)
-
-
-@pytest.fixture
-def home_page(driver):
-    return HomePage(driver)
-
-
-@pytest.fixture
-def search_page(driver):
-    return SearchPage(driver)
+def open_home(driver):
+    base_url = ConfigReader.get("base_url")
+    driver.get(base_url)
+    yield
