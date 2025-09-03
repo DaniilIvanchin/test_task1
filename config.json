@@ -1,0 +1,9 @@
+{
+  "base_url": "https://store.steampowered.com/",
+  "timeout": 10,
+  "browser": {
+    "name": "chrome",
+    "options": ["--start-maximized", "--disable-infobars"],
+    "languages": ["ru", "en"]
+  }
+}
