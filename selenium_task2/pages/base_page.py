@@ -6,6 +6,7 @@ from selenium_task2.core.config_reader import ConfigReader
 class BasePage:
     DEFAULT_TIMEOUT = 10
     CHECK_PAGE_LOCATOR = None
+
     def __init__(self, driver):
         timeout = ConfigReader.get("timeout", self.DEFAULT_TIMEOUT)
         self.driver = driver
